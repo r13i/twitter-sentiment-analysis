@@ -1,58 +1,64 @@
-from urllib.parse import quote
-from base64 import b64encode
 import json
 import requests
 
-API_KEY = "t45mN2Qw6cDTS5T3YBzy1evpy"
-API_SECRET = "dhL74vqvuN6LgLSzM2Eesp510Cb7yy3Z1hyUtwXz3KsPPaXkok"
+from pprint import pprint
 
-def getAccessToken():
-    # Encode the key and secret to the RFC 1738 (i.e. replace special characters with %xx)
-    quoted_api_key, quoted_api_secret = quote(API_KEY), quote(API_SECRET)
-    bearer_token_credentials = "{}:{}".format(quoted_api_key, quoted_api_secret).encode()
-    base64_bearer_token_credentials = b64encode(bearer_token_credentials).decode()
+CONSUMER_KEY = "t45mN2Qw6cDTS5T3YBzy1evpy"
+CONSUMER_SECRET = "dhL74vqvuN6LgLSzM2Eesp510Cb7yy3Z1hyUtwXz3KsPPaXkok"
+STREAM_URL = "https://api.twitter.com/labs/1/tweets/stream/sample"
 
-    headers = {
-        "Host": "api.twitter.com",
-        "Authorization": "Basic {}".format(base64_bearer_token_credentials),
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        "Accept-Encoding": "gzip"
-    }
+class BearerTokenAuth(requests.auth.AuthBase):
+    """
+    Request an OAuth2 Bearer Token from Twitter
+    """
+    def __init__(self, consumer_key, consumer_secret):
+        self.bearer_token_url = "https://api.twitter.com/oauth2/token"
+        self.consumer_key = consumer_key
+        self.consumer_secret = consumer_secret
+        self.bearer_token = self.get_bearer_token()
 
-    response = requests.post(url="https://api.twitter.com/oauth2/token?grant_type=client_credentials", headers=headers)
-    response = json.loads(response.text)
+    def get_bearer_token(self):
+        response = requests.post(
+            url = self.bearer_token_url,
+            auth = (self.consumer_key, self.consumer_secret),
+            data = { "grant_type": "client_credentials" },
+            headers = { "User-Agent": "TwitterDevSampledStreamQuickStartPython" }
+        )
 
-    if response['token_type'] != 'bearer':
-        return
+        if response.status_code is not 200:
+            raise Exception("Cannot get a bearer token (HTTP {}): {}"
+                .format(response.status_code, response.text))
 
-    return response['access_token']
+        body = response.json()
+        return body['access_token']
 
-def invalidateAccessToken(token):
-    
-    headers = {
-        "Host": "api.twitter.com",
-        "Authorization": "Basic {}".format(token),
-        "Accept": "*/*",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
+    def __call__(self, r):
+        r.headers['Authorization'] = "Bearer {}".format(self.bearer_token)
+        return r
 
-    r = requests.post(url="https://api.twitter.com/oauth2/invalidate_token?access_token=P{}".format(token), headers=headers)
-    print(r.text)
+
+def stream_connect(url, auth):
+    """
+    Stream a 1% sample from all real-time tweets
+    """
+    response = requests.get(
+        url = url,
+        auth = auth,
+        headers = { "User-Agent": "TwitterDevSampledStreamQuickStartPython" },
+        stream = True
+    )
+
+    for line in response.iter_lines():
+        if line:
+            line = json.loads(line)
+            print(line['data']['text'])
+
 
 
 
 if __name__ == "__main__":
 
-    ACCESS_TOKEN = getAccessToken()
+    bearer_token = BearerTokenAuth(CONSUMER_KEY, CONSUMER_SECRET)
 
-    invalidateAccessToken(ACCESS_TOKEN)
-
-    # headers = {
-    #     "Host": "api.twitter.com",
-    #     "Authorization": "Bearer {}".format(ACCESS_TOKEN),
-    #     "Accept-Encoding": "gzip"
-    # }
-
-    # r = requests.get("https://api.twitter.com/1.1/statuses/user_timeline.json?count=100&screen_name=twitterapi")
-
-    # print(r.text)
+    while True:
+        stream_connect(STREAM_URL, bearer_token)

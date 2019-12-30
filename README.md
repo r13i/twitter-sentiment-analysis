@@ -1,6 +1,10 @@
 # Tales of Twitter
 What if we could see the emotions and moods of people through the breadcrumbs they leave on Twitter ?
 
+## Architecture Summary
+This project is be based on micro-services each of which is wrapped into a docker container.
+
+
 # Steps
 ## Fetch and queue the tweets
 ## Build a Sentiment Analysis model
@@ -9,3 +13,5 @@ What if we could see the emotions and moods of people through the breadcrumbs th
 
 # Useful Links
 - [Using Twurl](https://developer.twitter.com/en/docs/tutorials/using-twurl)
+- [A Practical Introduction to Kafka Storage Internals](https://medium.com/@durgaswaroop/a-practical-introduction-to-kafka-storage-internals-d5b544f6925f)
+- [Deploy a Kafka broker in a Docker container](https://www.kaaproject.org/kafka-docker)

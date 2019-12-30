@@ -1,5 +1,6 @@
 # Specifics to project
 .secret
+persistence/
 
 
 # Byte-compiled / optimized / DLL files

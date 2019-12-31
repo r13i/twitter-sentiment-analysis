@@ -1,2 +1,13 @@
+# Ignore git-related files
 .git
 .gitignore
+
+# Ignore compose files
+docker-compose.yaml
+
+# Ignore development files
+venv/
+persistence/
+LICENSE
+README.md
+.vscode/

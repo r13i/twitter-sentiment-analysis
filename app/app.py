@@ -1,12 +1,12 @@
+import os
 import json
+import configparser
 import requests
 from pprint import pprint
 
-from utils.utils import dash
+from utils.utils import init_logger, dash
 
 
-CONSUMER_KEY = "t45mN2Qw6cDTS5T3YBzy1evpy"
-CONSUMER_SECRET = "dhL74vqvuN6LgLSzM2Eesp510Cb7yy3Z1hyUtwXz3KsPPaXkok"
 STREAM_URL = "https://api.twitter.com/labs/1/tweets/stream/sample"
 PARAMS = {
     # "format": "detailed",
@@ -76,7 +76,28 @@ def stream_connect(url, auth):
 
 if __name__ == "__main__":
 
-    bearer_token = BearerTokenAuth(CONSUMER_KEY, CONSUMER_SECRET)
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+    CONFIG_PATH = os.path.join(ROOT_DIR, 'config.ini')
+    SECRET_PATH = os.path.join(ROOT_DIR, 'secret.ini')
+
+    logger = init_logger()
+
+    config = configparser.ConfigParser(strict=True)
+    config.read_file(open(CONFIG_PATH, 'r'))
+
+    try:
+        config.read(SECRET_PATH)
+        consumer_key = config['twitter'].get('key').encode()
+        consumer_secret = config['twitter'].get('secret').encode()
+        logger.info("Twitter API credentials parsed.")
+    except KeyError as e:
+        logger.error("Secret file not found. Make sure it is available in the directory.")
+        exit()
+    except AttributeError as e:
+        logger.error("Cannot read Twitter API credentials. Make sure that API key and secret are in the secret file (also check spelling).")
+        exit()
+
+    bearer_token = BearerTokenAuth(consumer_key, consumer_secret)
 
     while True:
         stream_connect(STREAM_URL, bearer_token)

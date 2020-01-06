@@ -31,5 +31,6 @@ class TweetsProducer(object):
             if line:
                 line = json.loads(line)
                 
-                self.producer.send(self.topic, line['data']['text'].encode())
-                # print(self.producer.metrics())
+                if line['data']['lang'] == 'en':
+                    self.producer.send(self.topic, line['data']['text'].encode())
+                    # print(self.producer.metrics())

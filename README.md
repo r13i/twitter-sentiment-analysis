@@ -13,5 +13,6 @@ This project is be based on micro-services each of which is wrapped into a docke
 
 # Useful Links
 - [Using Twurl](https://developer.twitter.com/en/docs/tutorials/using-twurl)
+- [Kafka Quickstart](https://kafka.apache.org/quickstart)
 - [A Practical Introduction to Kafka Storage Internals](https://medium.com/@durgaswaroop/a-practical-introduction-to-kafka-storage-internals-d5b544f6925f)
 - [Deploy a Kafka broker in a Docker container](https://www.kaaproject.org/kafka-docker)

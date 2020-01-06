@@ -1,17 +1,26 @@
 version: "3"
 
 services:
-  # app:
-  #   container_name: twittersentimentanalysis_app
-  #   build: "."
-  #   # command: >
-  #   #   python app.py
-  #   # env_file:
-  #   #   - .env
-  #   # ports:
-  #   #   - "8000:8000"
-  #   volumes:
-  #     - ./app:/app
+
+  producer:
+    container_name: twittersentimentanalysis_producer
+    build: "./produce-tweets"
+    depends_on:
+      - kafka
+    # command: >
+    #   python run.py
+    volumes:
+      - ./produce-tweets:/produce-tweets
+
+  consumer:
+    container_name: twittersentimentanalysis_consumer
+    build: "./consume-tweets"
+    depends_on:
+      - producer
+    # command: >
+    #   python run.py
+    volumes:
+      - ./consume-tweets:/consume-tweets
 
   zookeeper:
     container_name: twittersentimentanalysis_zookeeper
@@ -51,8 +60,8 @@ services:
   #     - "GF_AUTH_ANONYMOUS_org_role=Admin"
   #   ports: 
   #     - "3000:3000"
-    volumes:
-      - ./persistence/grafana:/var/lib/grafana
+  #   volumes:
+  #     - ./persistence/grafana:/var/lib/grafana
 
 networks:
   default:

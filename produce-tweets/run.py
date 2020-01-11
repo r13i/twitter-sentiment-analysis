@@ -56,10 +56,10 @@ if __name__ == "__main__":
     config = configparser.ConfigParser(strict=True)
     config.read_file(open(CONFIG_PATH, 'r'))
 
-    bearer_token_url = config['twitter'].get('bearer_token_url').encode()
-    stream_url = config['twitter'].get('stream_url').encode()
-    kafka_broker = config['kafka'].get('broker')
-    kafka_topic = config['kafka'].get('topic')
+    bearer_token_url    = config['twitter'].get('bearer_token_url').encode()
+    stream_url          = config['twitter'].get('stream_url').encode()
+    kafka_broker        = config['kafka'].get('broker')
+    kafka_topic         = config['kafka'].get('topic')
 
     try:
         config.read(SECRET_PATH)
@@ -74,8 +74,18 @@ if __name__ == "__main__":
         exit()
 
     bearer_token = BearerTokenAuth(bearer_token_url, consumer_key, consumer_secret)
-    tweets_producer = TweetsProducer(kafka_broker, kafka_topic, logger)
+    tweets_producer = TweetsProducer(
+        broker = kafka_broker,
+        topic = kafka_topic,
+        logger = logger
+    )
+
 
     while True:
-        # stream_connect(stream_url, bearer_token)
-        tweets_producer.produce(stream_url, PARAMS, bearer_token)
+        try:
+            # stream_connect(stream_url, bearer_token)
+            tweets_producer.produce(stream_url, PARAMS, bearer_token)
+        except KeyboardInterrupt:
+            tweets_producer.close()
+            logger.info("Producer closed. Bye!")
+            exit(0)

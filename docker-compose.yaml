@@ -11,6 +11,7 @@ services:
     #   python run.py
     volumes:
       - ./produce-tweets:/produce-tweets
+      - ./config.ini:/produce-tweets/config.ini
 
   consumer:
     container_name: twittersentimentanalysis_consumer
@@ -21,6 +22,7 @@ services:
     #   python run.py
     volumes:
       - ./consume-tweets:/consume-tweets
+      - ./config.ini:/consume-tweets/config.ini
 
   zookeeper:
     container_name: twittersentimentanalysis_zookeeper

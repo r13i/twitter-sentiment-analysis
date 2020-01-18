@@ -2,7 +2,7 @@ import os
 import logging
 import configparser
 
-from kafka import KafkaConsumer
+from stream_process import StreamProcess
 
 if __name__ == "__main__":
 
@@ -16,24 +16,30 @@ if __name__ == "__main__":
     config = configparser.ConfigParser(strict=True)
     config.read_file(open(CONFIG_PATH, 'r'))
 
-    consumer = KafkaConsumer(
-        config['kafka'].get('topic'),
-        bootstrap_servers = config['kafka'].get('broker'),
-        enable_auto_commit = True,
-        auto_offset_reset = 'latest')
+    try:
+        logging.info("Connecting to Kafka topic '{}'@'{}'"
+            .format(config['kafka'].get('topic'), config['kafka'].get('broker')))
 
-    # consumer = KafkaConsumer(
-    #     'tweets',
-    #     bootstrap_servers = 'localhost:9092',
-    #     enable_auto_commit = True,
-    #     auto_offset_reset = 'latest')
+        consumer = StreamProcess(
+            config['kafka'].get('topic'),
+            bootstrap_servers = config['kafka'].get('broker'),
+            enable_auto_commit = True,
+            auto_offset_reset = 'latest')
+
+        # consumer = StreamProcess(
+        #     'tweets',
+        #     bootstrap_servers = 'localhost:9092',
+        #     enable_auto_commit = True,
+        #     auto_offset_reset = 'latest')
+
+    except NoBrokersAvailable as e:
+        logging.error("No brokers found at '{}'.".format(config['kafka'].get('broker')))
+        exit()
 
 
     while True:
         try:
-            msg = next(consumer)
-            print(msg.value.decode("utf-8") )
-            logging.info(msg.offset)
+            consumer.process()
         except KeyboardInterrupt:
             consumer.close()
             logging.info("Consumer closed. Bye!")

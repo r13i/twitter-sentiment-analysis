@@ -74,13 +74,15 @@ if __name__ == "__main__":
         exit()
 
     bearer_token = BearerTokenAuth(bearer_token_url, consumer_key, consumer_secret)
+
+    logger.info("Connecting to Kafka topic '{}'@'{}' ...".format(kafka_topic, kafka_broker)
     tweets_producer = TweetsProducer(
         broker = kafka_broker,
         topic = kafka_topic,
         logger = logger
     )
 
-
+    logger.info("Starting publishing.")
     while True:
         try:
             # stream_connect(stream_url, bearer_token)

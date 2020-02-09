@@ -18,7 +18,7 @@ class BearerTokenAuth(requests.auth.AuthBase):
             headers = { "User-Agent": "TwitterDevSampledStreamQuickStartPython" }
         )
 
-        if response.status_code is not 200:
+        if response.status_code != 200:
             raise Exception("Cannot get a bearer token (HTTP {}): {}"
                 .format(response.status_code, response.text))
 

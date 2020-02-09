@@ -1,22 +1,14 @@
 import json
+import logging
 import requests
 
 from kafka import KafkaProducer
 from kafka.errors import NoBrokersAvailable
 
-class TweetsProducer(object):
-    def __init__(self, broker, topic, logger, **kwargs):
-        self.broker = broker
+class TweetsProducer(KafkaProducer):
+    def __init__(self, topic, *args, **kwargs):
         self.topic = topic
-        self.logger = logger
-
-        try:
-            self.producer = KafkaProducer(
-                bootstrap_servers = self.broker
-            )
-        except NoBrokersAvailable as e:
-            self.logger.error("No brokers found at '{}'.".format(self.broker))
-            exit()
+        super().__init__(*args, **kwargs)
 
     def produce(self, stream_url, params, auth):
         """
@@ -36,8 +28,6 @@ class TweetsProducer(object):
                 line = json.loads(line)
                 
                 if line['data']['lang'] == 'en':
-                    self.producer.send(self.topic, line['data']['text'].encode())
-                    # print(self.producer.metrics())
-
-    def close(self):
-        self.producer.close()
+                    self.send(self.topic, line['data']['text'].encode())
+                    logging.info(line['data']['text'])
+                    # print(self.metrics())

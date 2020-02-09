@@ -37,10 +37,11 @@ if __name__ == "__main__":
         exit()
 
 
-    while True:
-        try:
+    try:
+        while True:
             consumer.process()
-        except KeyboardInterrupt:
-            consumer.close()
-            logging.info("Consumer closed. Bye!")
-            exit(0)
+
+    except KeyboardInterrupt:
+        consumer.close()
+        logging.info("Consumer closed. Bye!")
+        exit(0)

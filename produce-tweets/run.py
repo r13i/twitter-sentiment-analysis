@@ -1,11 +1,15 @@
 import os
 import json
+import logging
 import configparser
 import requests
+from threading import Timer
+
+from kafka.errors import NoBrokersAvailable
 
 from bearer_token_auth import BearerTokenAuth
 from tweets_producer import TweetsProducer
-from utils.utils import init_logger, dash
+from utils.utils import dash
 
 
 PARAMS = {
@@ -43,7 +47,22 @@ PARAMS = {
 #             dash(languages)
 
 
+def connect_broker(broker, topic, retry=3):
+    try:
+        logging.info("Attempting connection to Kafka topic '{}'@'{}' ...".format(topic, broker))
+        tweets_producer = TweetsProducer(
+            bootstrap_servers = broker,
+            topic = topic
+        )
 
+    except NoBrokersAvailable as e:
+        logging.warning("No brokers found at '{}'. Attempting reconnect ...".format(broker))
+
+        t = Timer(retry, connect_broker, args=None, kwargs={'broker': broker, 'topic': topic})
+        t.start()
+
+    else:
+        return tweets_producer
 
 if __name__ == "__main__":
 
@@ -51,43 +70,43 @@ if __name__ == "__main__":
     CONFIG_PATH = os.path.join(ROOT_DIR, 'config.ini')
     SECRET_PATH = os.path.join(ROOT_DIR, 'secret.ini')
 
-    logger = init_logger()
+    logging.basicConfig(
+        level = logging.INFO,
+        format = "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
 
     config = configparser.ConfigParser(strict=True)
     config.read_file(open(CONFIG_PATH, 'r'))
 
     bearer_token_url    = config['twitter'].get('bearer_token_url').encode()
     stream_url          = config['twitter'].get('stream_url').encode()
-    kafka_broker        = config['kafka'].get('broker')
-    kafka_topic         = config['kafka'].get('topic')
+    broker              = config['kafka'].get('broker')
+    topic               = config['kafka'].get('topic')
 
     try:
         config.read(SECRET_PATH)
         consumer_key = config['twitter'].get('key').encode()
         consumer_secret = config['twitter'].get('secret').encode()
-        logger.info("Twitter API credentials parsed.")
+        logging.info("Twitter API credentials parsed.")
     except KeyError as e:
-        logger.error("Secret file not found. Make sure it is available in the directory.")
+        logging.error("Secret file not found. Make sure it is available in the directory.")
         exit()
     except AttributeError as e:
-        logger.error("Cannot read Twitter API credentials. Make sure that API key and secret are in the secret file (also check spelling).")
+        logging.error("Cannot read Twitter API credentials. Make sure that API key and secret are in the secret file (also check spelling).")
         exit()
 
     bearer_token = BearerTokenAuth(bearer_token_url, consumer_key, consumer_secret)
 
-    logger.info("Connecting to Kafka topic '{}'@'{}' ...".format(kafka_topic, kafka_broker)
-    tweets_producer = TweetsProducer(
-        broker = kafka_broker,
-        topic = kafka_topic,
-        logger = logger
-    )
+    while (tweets_producer := connect_broker(broker, topic)) is None:
+        continue
 
-    logger.info("Starting publishing.")
-    while True:
-        try:
+
+    logging.info("Starting publishing.")
+    try:
+        while True:
             # stream_connect(stream_url, bearer_token)
             tweets_producer.produce(stream_url, PARAMS, bearer_token)
-        except KeyboardInterrupt:
-            tweets_producer.close()
-            logger.info("Producer closed. Bye!")
-            exit(0)
+
+    except KeyboardInterrupt:
+        tweets_producer.close()
+        logging.info("Producer closed. Bye!")
+        exit(0)

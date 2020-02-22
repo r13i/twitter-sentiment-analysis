@@ -9,7 +9,9 @@ COPY . .
 RUN pip install -r requirements.txt
 
 # RUN python -m nltk.downloader twitter_samples && \
-#     python -m nltk.downloader punkt
+#     python -m nltk.downloader punkt && \
+#     python -m nltk.downloader wordnet && \
+#     python -m nltk.downloader averaged_perceptron_tagger
 
 # EXPOSE xxxx
 # HEALTHCHECK CMD xxx

@@ -2,6 +2,8 @@ import os
 import logging
 import configparser
 
+from kafka.errors import NoBrokersAvailable
+
 from stream_process import StreamProcess
 
 if __name__ == "__main__":
@@ -27,7 +29,8 @@ if __name__ == "__main__":
         #     auto_offset_reset = 'latest')
 
         consumer = StreamProcess(
-            'tweets',
+            'tweets',   # Kafka topic
+            classifier_filepath = './consume-tweets/model.pickle',
             bootstrap_servers = 'localhost:9092',
             enable_auto_commit = True,
             auto_offset_reset = 'latest')

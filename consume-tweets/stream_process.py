@@ -1,5 +1,6 @@
 import logging
 import re, string
+import pickle
 
 from kafka import KafkaConsumer
 from nltk.tag import pos_tag
@@ -9,9 +10,14 @@ from nltk.tokenize import TweetTokenizer
 
 class StreamProcess(KafkaConsumer):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.broker = kwargs['bootstrap_servers']
-        self.stopwords = stopwords.words('english')
+        self._classifier_filepath = kwargs.pop('classifier_filepath', None)
+        super().__init__(*args, **kwargs)
+
+        self._stopwords = stopwords.words('english')
+
+        with open(self._classifier_filepath, 'rb') as f:
+            self._classifier = pickle.load(f)
 
         self._word_tokenizer = TweetTokenizer(
             preserve_case=True,
@@ -25,22 +31,24 @@ class StreamProcess(KafkaConsumer):
             message = self.__next__()
             tweet = message.value.decode('utf-8').strip()
 
+            wrapper = '+' if self._classify(tweet) == 'Positive' else '-'
+
+            print(wrapper * 50)
             print(tweet)
-            print(self._lemmatize(self._tokenize(tweet)))
-            print('=' * 50)
+            print(wrapper * 50)
             # logging.info(message.offset)
 
         except StopIteration as e:
             logging.warning("No incoming message found at Kafka broker: {}.".format(self.broker))
             return
 
-    def _tokenize(self, t):
-        return self._word_tokenizer.tokenize(t)
+    def _tokenize(self, tweet):
+        return self._word_tokenizer.tokenize(tweet)
 
     def _is_noise(self, word):
         pattern = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+#]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+|(@[A-Za-z0-9_]+)'
         return word in string.punctuation \
-            or word.lower() in self.stopwords \
+            or word.lower() in self._stopwords \
             or re.search(pattern, word, re.IGNORECASE) != None
 
     def _tag2type(self, tag):
@@ -67,3 +75,7 @@ class StreamProcess(KafkaConsumer):
             self._lemmatizer.lemmatize(word, self._tag2type(tag)).lower()
             for word, tag in pos_tag(tokens) if not self._is_noise(word)
         ]
+
+    def _classify(self, tweet):
+        tokens = self._lemmatize(self._tokenize(tweet))
+        return self._classifier.classify(dict([token, True] for token in tokens))

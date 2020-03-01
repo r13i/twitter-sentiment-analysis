@@ -3,7 +3,6 @@ import logging
 import requests
 
 from kafka import KafkaProducer
-from kafka.errors import NoBrokersAvailable
 
 class TweetsProducer(KafkaProducer):
     def __init__(self, topic, *args, **kwargs):

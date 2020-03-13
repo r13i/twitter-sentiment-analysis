@@ -18,6 +18,7 @@ services:
     build: "./consume-tweets"
     depends_on:
       - producer
+      - influxdb
     # command: >
     #   python run.py
     volumes:
@@ -40,6 +41,8 @@ services:
       - "9092:9092"
     expose:
       - "9093"
+    volumes:
+      - ./persistence/kafka:/tmp/kafka-logs
     environment:
       - "KAFKA_BROKER_ID=1"
       - "KAFKA_LISTENERS=INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092"
@@ -49,21 +52,34 @@ services:
       - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
       - "KAFKA_CREATE_TOPICS=tweets:1:1"
       - "KAFKA_LOG_DIRS=/tmp/kafka-logs"
-    volumes:
-      - ./persistence/kafka:/tmp/kafka-logs
 
-  # grafana:
-  #   container_name: twittersentimentanalysis_grafana
-  #   image: grafana/grafana:6.5.2
-  #   environment:
-  #     - "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource"
-  #     - "GF_AUTH_ANONYMOUS_ENABLED=true"
-  #     - "GF_AUTH_ANONYMOUS_org_name=Main Org."
-  #     - "GF_AUTH_ANONYMOUS_org_role=Admin"
-  #   ports: 
-  #     - "3000:3000"
-  #   volumes:
-  #     - ./persistence/grafana:/var/lib/grafana
+  influxdb:
+    container_name: twittersentimentanalysis_influxdb
+    image: influxdb:1.7.10
+    # depends_on:
+    #   - consumer
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./persistence/influxdb:/var/lib/influxdb
+    environment:
+      - "INFLUXDB_GRAPHITE_ENABLED=false"
+      - "INFLUXDB_DB=tweets"
+
+  grafana:
+    container_name: twittersentimentanalysis_grafana
+    image: grafana/grafana:6.5.2
+    depends_on:
+      - influxdb
+    environment:
+      # - "GF_INSTALL_PLUGINS="
+      - "GF_AUTH_ANONYMOUS_ENABLED=true"
+      - "GF_AUTH_ANONYMOUS_org_name=Main Org."
+      - "GF_AUTH_ANONYMOUS_org_role=Admin"
+    ports: 
+      - "3000:3000"
+    volumes:
+      - ./persistence/grafana:/var/lib/grafana
 
 networks:
   default:

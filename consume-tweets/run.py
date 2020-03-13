@@ -35,7 +35,10 @@ if __name__ == "__main__":
             classifier_filepath = './consume-tweets/model.pickle',
             bootstrap_servers = 'localhost:9092',
             enable_auto_commit = True,
-            auto_offset_reset = 'latest')
+            auto_offset_reset = 'latest',
+            influxdb_host = 'localhost',
+            influxdb_port = '8086',
+            influxdb_database = 'tweets')
 
     except NoBrokersAvailable as e:
         logging.error("No brokers found at '{}'.".format(config['kafka'].get('broker')))

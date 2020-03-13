@@ -7,11 +7,16 @@ from nltk.tag import pos_tag
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import TweetTokenizer
+from influxdb import InfluxDBClient
 
 class StreamProcess(KafkaConsumer):
     def __init__(self, *args, **kwargs):
-        self.broker = kwargs['bootstrap_servers']
-        self._classifier_filepath = kwargs.pop('classifier_filepath', None)
+        self.broker                 = kwargs['bootstrap_servers']
+        self._classifier_filepath   = kwargs.pop('classifier_filepath', None)
+        self.influxdb_host          = kwargs.pop('influxdb_host', 'localhost')
+        self.influxdb_port          = kwargs.pop('influxdb_port', 8086)
+        self.influxdb_database      = kwargs.pop('influxdb_database', None)
+
         super().__init__(*args, **kwargs)
 
         self._stopwords = stopwords.words('english')
@@ -26,12 +31,39 @@ class StreamProcess(KafkaConsumer):
 
         self._lemmatizer = WordNetLemmatizer()
 
+        self.influxdb_client = InfluxDBClient(
+            host        = self.influxdb_host,
+            port        = self.influxdb_port,
+            username    = 'root',
+            password    = 'root',
+            database    = self.influxdb_database)
+        self.influxdb_client.create_database(self.influxdb_database)
+
     def process(self):
         try:
             message = self.__next__()
             tweet = message.value.decode('utf-8').strip()
 
-            wrapper = '+' if self._classify(tweet) == 'Positive' else '-'
+            polarity = self._classify(tweet)
+
+            wrapper = '+' if polarity == 'Positive' else '-'
+
+            data_point = [{
+                # "timestamp":
+                "measurement": "sentiments",
+                "tags": {
+                    "language": "en",
+                    "polarity": polarity
+                },
+                "fields": {
+                    "tweet": tweet
+                }
+            }]
+
+            if self.influxdb_client.write_points(data_point):
+                logging.info("DB SUCCESSFUL")
+            else:
+                logging.info("DB FAILED")
 
             print(wrapper * 50)
             print(tweet)

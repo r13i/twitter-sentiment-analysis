@@ -66,17 +66,20 @@ def connect_broker(broker, topic, retry=3):
 
 if __name__ == "__main__":
 
+    # Load-up config file
     ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
     CONFIG_PATH = os.path.join(ROOT_DIR, 'config.ini')
     SECRET_PATH = os.path.join(ROOT_DIR, 'secret.ini')
 
+    config = configparser.ConfigParser(strict=True)
+    config.read_file(open(CONFIG_PATH, 'r'))
+
+    # Setup logging
     logging.basicConfig(
         level = logging.INFO,
         format = "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
 
-    config = configparser.ConfigParser(strict=True)
-    config.read_file(open(CONFIG_PATH, 'r'))
-
+    # Read config paramaters
     bearer_token_url    = config['twitter'].get('bearer_token_url').encode()
     stream_url          = config['twitter'].get('stream_url').encode()
     broker              = config['kafka'].get('broker')
@@ -94,13 +97,16 @@ if __name__ == "__main__":
         logging.error("Cannot read Twitter API credentials. Make sure that API key and secret are in the secret file (also check spelling).")
         exit()
 
+    # Access Twitter's auth API to obtain a bearer token
     bearer_token = BearerTokenAuth(bearer_token_url, consumer_key, consumer_secret)
 
+    # Attempt connection to Kafka broker
+    # Iterate over and over until the broker starts and becomes available
     while (tweets_producer := connect_broker(broker, topic)) is None:
         continue
 
 
-    logging.info("Starting publishing.")
+    logging.info("Starting publishing...")
     try:
         while True:
             # stream_connect(stream_url, bearer_token)

@@ -25,7 +25,7 @@ class TweetsProducer(KafkaProducer):
         for line in response.iter_lines():
             if line:
                 line = json.loads(line)
-                
+
                 if line['data']['lang'] == 'en':
                     self.send(self.topic, line['data']['text'].encode())
                     logging.info(line['data']['text'])

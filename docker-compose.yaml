@@ -1,7 +1,6 @@
 version: "3"
 
 services:
-
   producer:
     container_name: twittersentimentanalysis_producer
     build: "./produce-tweets"
@@ -56,8 +55,6 @@ services:
   influxdb:
     container_name: twittersentimentanalysis_influxdb
     image: influxdb:1.7.10
-    # depends_on:
-    #   - consumer
     ports:
       - "8086:8086"
     volumes:
@@ -69,10 +66,8 @@ services:
   grafana:
     container_name: twittersentimentanalysis_grafana
     image: grafana/grafana:6.5.2
-    depends_on:
-      - influxdb
     environment:
-      # - "GF_INSTALL_PLUGINS="
+      - "GF_INSTALL_PLUGINS=grafana-piechart-panel"
       - "GF_AUTH_ANONYMOUS_ENABLED=true"
       - "GF_AUTH_ANONYMOUS_org_name=Main Org."
       - "GF_AUTH_ANONYMOUS_org_role=Admin"

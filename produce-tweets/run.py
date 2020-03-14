@@ -47,7 +47,7 @@ PARAMS = {
 #             dash(languages)
 
 
-def connect_broker(broker, topic, retry=3):
+def connect_broker(broker, topic, interval_sec=3):
     try:
         logging.info("Attempting connection to Kafka topic '{}'@'{}' ...".format(topic, broker))
         tweets_producer = TweetsProducer(
@@ -58,7 +58,7 @@ def connect_broker(broker, topic, retry=3):
     except NoBrokersAvailable as e:
         logging.warning("No brokers found at '{}'. Attempting reconnect ...".format(broker))
 
-        t = Timer(retry, connect_broker, args=None, kwargs={'broker': broker, 'topic': topic})
+        t = Timer(interval_sec, connect_broker, args=None, kwargs={'broker': broker, 'topic': topic})
         t.start()
 
     else:

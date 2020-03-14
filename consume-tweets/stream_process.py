@@ -65,9 +65,6 @@ class StreamProcess(KafkaConsumer):
             else:
                 logging.info("DB FAILED")
 
-            print(wrapper * 50)
-            print(tweet)
-            print(wrapper * 50)
             # logging.info(message.offset)
 
         except StopIteration as e:

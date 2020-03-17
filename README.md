@@ -4,9 +4,7 @@ What if we could see the emotions and moods of people through the breadcrumbs th
 ## Architecture Summary
 This project is be based on micro-services each of which is wrapped into a docker container.
 
-TODO:
-- kafka retention period
-- encrypt creds
+![Architecture diagram](docs/twitter-sentiment-analysis-diagram.png)
 
 # Steps
 ## Fetch and queue the tweets

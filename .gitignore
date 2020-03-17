@@ -1,7 +1,7 @@
 # Specifics to project
 secret.ini
 persistence/
-
+*.pickle
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

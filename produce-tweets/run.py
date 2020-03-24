@@ -101,18 +101,22 @@ if __name__ == "__main__":
     bearer_token = BearerTokenAuth(bearer_token_url, consumer_key, consumer_secret)
 
     # Attempt connection to Kafka broker
-    # Iterate over and over until the broker starts and becomes available
+    # Iterate over and over (with a few seconds of interval) until 
+    # the broker starts and becomes available
     while (tweets_producer := connect_broker(broker, topic)) is None:
         continue
 
 
     logging.info("Starting publishing...")
-    try:
-        while True:
+    while True:
+        try:
             # stream_connect(stream_url, bearer_token)
             tweets_producer.produce(stream_url, PARAMS, bearer_token)
 
-    except KeyboardInterrupt:
-        tweets_producer.close()
-        logging.info("Producer closed. Bye!")
-        exit(0)
+        except requests.exceptions.ChunkedEncodingError as e:
+            logging.warning("Connection to Twitter API got broken. Continuing ...")
+
+        except KeyboardInterrupt:
+            tweets_producer.close()
+            logging.info("Producer closed. Bye!")
+            exit(0)

@@ -7,6 +7,11 @@ This project is be based on micro-services each of which is wrapped into a docke
 ![Architecture diagram](docs/twitter-sentiment-analysis-diagram.png)
 
 # Steps
+
+![Text input > Tokenization > Stop-words filtering > Negation handeling > Stemming > Classification > Sentiment class](docs/sentiment-analysis-cycle.png)
+
+Text input > Tokenization > Stop-words filtering > Negation handeling > Stemming > Classification > Sentiment class - Source: [Medium](https://medium.com/@tomyuz/a-sentiment-analysis-approach-to-predicting-stock-returns-d5ca8b75a42)
+
 ## Fetch and queue the tweets
 ## Build a Sentiment Analysis model
 ## Pipe the tweets through the model

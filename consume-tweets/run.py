@@ -47,13 +47,18 @@ if __name__ == "__main__":
         level = logging.INFO,
         format = "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
 
-    consumer = connect_broker(
+    # Attempt connection to Kafka broker
+    # Iterate over and over (with a few seconds of interval) until 
+    # the broker starts and becomes available
+    while (consumer := connect_broker(
         broker              = config['kafka'].get('broker'),
         topic               = config['kafka'].get('topic'),
         classifier_filepath = config['classifier'].get('path'),
         influxdb_host       = config['influxdb'].get('host'),
         influxdb_port       = config['influxdb'].get('port'),
-        influxdb_database   = config['influxdb'].get('database'))
+        influxdb_database   = config['influxdb'].get('sentiments-database'))
+    ) is None:
+        continue
 
         # consumer = StreamProcess(
         #     'tweets',   # Kafka topic

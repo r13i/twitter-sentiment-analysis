@@ -51,6 +51,8 @@ services:
       - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
       - "KAFKA_CREATE_TOPICS=tweets:1:1"
       - "KAFKA_LOG_DIRS=/tmp/kafka-logs"
+      - "KAFKA_LOG_RETENTION_HOURS=24"
+      - "KAFKA_LOG_CLEANUP_POLICY=delete"
 
   influxdb:
     container_name: twittersentimentanalysis_influxdb

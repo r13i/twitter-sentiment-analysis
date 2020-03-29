@@ -1,6 +1,8 @@
+import json
 import logging
 import re, string
 import pickle
+from requests.exceptions import ConnectionError
 
 from kafka import KafkaConsumer
 from nltk.tag import pos_tag
@@ -42,21 +44,23 @@ class StreamProcess(KafkaConsumer):
     def process(self):
         try:
             message = self.__next__()
-            tweet = message.value.decode('utf-8').strip()
+            message = json.loads(message.value.decode('utf-8'))
 
+            id = message['id']
+            tweet = message['tweet'].strip()
+
+            # Infer sentiment from tweet
             polarity = self._classify(tweet)
-
-            wrapper = '+' if polarity == 'Positive' else '-'
 
             data_point = [{
                 # "timestamp":
-                "measurement": "sentiments",
+                "measurement": self.influxdb_database,
                 "tags": {
                     "language": "en",
                     "polarity": polarity
                 },
                 "fields": {
-                    "tweet": tweet
+                    "id": id
                 }
             }]
 
@@ -70,6 +74,11 @@ class StreamProcess(KafkaConsumer):
         except StopIteration as e:
             logging.warning("No incoming message found at Kafka broker: {}.".format(self.broker))
             return
+        
+        except ConnectionError as e:
+            logging.warning("Unable to connect to InfluxDB. Continuing ...")
+            return
+            
 
     def _tokenize(self, tweet):
         return self._word_tokenizer.tokenize(tweet)

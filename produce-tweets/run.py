@@ -4,6 +4,7 @@ import logging
 import configparser
 import requests
 from threading import Timer
+from requests.exceptions import ConnectionError
 
 from kafka.errors import NoBrokersAvailable
 
@@ -20,40 +21,17 @@ PARAMS = {
     # "expansions": "attachments.poll_ids,attachments.media_keys,author_id,entities.mentions.username,geo.place_id,in_reply_to_user_id,referenced_tweets.id,referenced_tweets.id.author_id"
 }
 
+def connect_broker(broker, topic,
+    influxdb_host, influxdb_port, influxdb_database, interval_sec=3):
 
-# def stream_connect(url, auth):
-#     """
-#     Stream a 1% sample from all real-time tweets
-#     """
-#     response = requests.get(
-#         url = url,
-#         params = PARAMS,
-#         auth = auth,
-#         headers = { "User-Agent": "TwitterDevSampledStreamQuickStartPython" },
-#         stream = True
-#     )
-
-#     languages = {}
-#     for line in response.iter_lines():
-#         if line:
-#             line = json.loads(line)
-#             # print(line['data']['text'])
-
-#             if line['data']['lang'] not in languages:
-#                 languages[line['data']['lang']] = 0
-
-#             languages[line['data']['lang']] += 1
-#             # print(languages)
-#             dash(languages)
-
-
-def connect_broker(broker, topic, interval_sec=3):
     try:
         logging.info("Attempting connection to Kafka topic '{}'@'{}' ...".format(topic, broker))
         tweets_producer = TweetsProducer(
             bootstrap_servers = broker,
-            topic = topic
-        )
+            topic = topic,
+            influxdb_host = influxdb_host,
+            influxdb_port = influxdb_port,
+            influxdb_database = influxdb_database)
 
     except NoBrokersAvailable as e:
         logging.warning("No brokers found at '{}'. Attempting reconnect ...".format(broker))
@@ -65,7 +43,6 @@ def connect_broker(broker, topic, interval_sec=3):
         return tweets_producer
 
 if __name__ == "__main__":
-
     # Load-up config file
     ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
     CONFIG_PATH = os.path.join(ROOT_DIR, 'config.ini')
@@ -82,8 +59,6 @@ if __name__ == "__main__":
     # Read config paramaters
     bearer_token_url    = config['twitter'].get('bearer_token_url').encode()
     stream_url          = config['twitter'].get('stream_url').encode()
-    broker              = config['kafka'].get('broker')
-    topic               = config['kafka'].get('topic')
 
     try:
         config.read(SECRET_PATH)
@@ -103,18 +78,26 @@ if __name__ == "__main__":
     # Attempt connection to Kafka broker
     # Iterate over and over (with a few seconds of interval) until 
     # the broker starts and becomes available
-    while (tweets_producer := connect_broker(broker, topic)) is None:
+    while (tweets_producer := connect_broker(
+        broker              = config['kafka'].get('broker'),
+        topic               = config['kafka'].get('topic'),
+        influxdb_host       = config['influxdb'].get('host'),
+        influxdb_port       = config['influxdb'].get('port'),
+        influxdb_database   = config['influxdb'].get('tweets-database'))
+    ) is None:
         continue
 
 
     logging.info("Starting publishing...")
     while True:
         try:
-            # stream_connect(stream_url, bearer_token)
             tweets_producer.produce(stream_url, PARAMS, bearer_token)
 
         except requests.exceptions.ChunkedEncodingError as e:
             logging.warning("Connection to Twitter API got broken. Continuing ...")
+
+        except ConnectionError as e:
+            logging.warning("Unable to connect to InfluxDB. Continuing ...")
 
         except KeyboardInterrupt:
             tweets_producer.close()

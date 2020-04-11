@@ -2,6 +2,7 @@
 secret.ini
 persistence/
 *.pickle
+*.xml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

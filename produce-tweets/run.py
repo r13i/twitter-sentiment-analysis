@@ -69,7 +69,7 @@ if __name__ == "__main__":
         logging.error("Secret file not found. Make sure it is available in the directory.")
         exit()
     except AttributeError as e:
-        logging.error("Cannot read Twitter API credentials. Make sure that API key and secret are in the secret file (also check spelling).")
+        logging.error("Cannot read Twitter API credentials. Make sure that API key and secret are in the secret.ini file (also check spelling).")
         exit()
 
     # Access Twitter's auth API to obtain a bearer token

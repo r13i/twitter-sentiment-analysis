@@ -6,6 +6,7 @@ services:
     build: "./produce-tweets"
     depends_on:
       - kafka
+      - influxdb
     # command: >
     #   python run.py
     volumes:
@@ -16,13 +17,14 @@ services:
     container_name: twittersentimentanalysis_consumer
     build: "./consume-tweets"
     depends_on:
-      - producer
+      - kafka
       - influxdb
     # command: >
     #   python run.py
     volumes:
       - ./consume-tweets:/consume-tweets
       - ./config.ini:/consume-tweets/config.ini
+      - ./model/model.pickle:/consume-tweets/model.pickle
 
   zookeeper:
     container_name: twittersentimentanalysis_zookeeper
@@ -63,7 +65,6 @@ services:
       - ./persistence/influxdb:/var/lib/influxdb
     environment:
       - "INFLUXDB_GRAPHITE_ENABLED=false"
-      - "INFLUXDB_DB=tweets"
 
   grafana:
     container_name: twittersentimentanalysis_grafana
@@ -74,7 +75,7 @@ services:
       - "GF_AUTH_ANONYMOUS_org_name=Main Org."
       - "GF_AUTH_ANONYMOUS_org_role=Admin"
     ports: 
-      - "3000:3000"
+      - "80:3000"
     volumes:
       - ./persistence/grafana:/var/lib/grafana
 

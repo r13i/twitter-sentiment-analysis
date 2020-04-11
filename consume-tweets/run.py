@@ -5,7 +5,7 @@ from threading import Timer
 
 from kafka.errors import NoBrokersAvailable
 
-from stream_process import StreamProcess
+from tweets_consumer import TweetsConsumer
 
 
 def connect_broker(broker, topic, classifier_filepath,
@@ -14,7 +14,7 @@ def connect_broker(broker, topic, classifier_filepath,
     try:
         logging.info("Attempting connection to Kafka topic '{}'@'{}' ...".format(topic, broker))
 
-        consumer = StreamProcess(
+        consumer = TweetsConsumer(
             topic,   # Kafka topic
             classifier_filepath = classifier_filepath,
             bootstrap_servers = broker,
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     ) is None:
         continue
 
-        # consumer = StreamProcess(
+        # consumer = TweetsConsumer(
         #     'tweets',   # Kafka topic
         #     classifier_filepath = './consume-tweets/model.pickle',
         #     bootstrap_servers = 'localhost:9092',

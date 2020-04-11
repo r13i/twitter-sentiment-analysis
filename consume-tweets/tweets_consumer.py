@@ -1,7 +1,8 @@
 import json
 import logging
-import re, string
+import re
 import pickle
+from string import punctuation
 from requests.exceptions import ConnectionError
 
 from kafka import KafkaConsumer
@@ -11,7 +12,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import TweetTokenizer
 from influxdb import InfluxDBClient
 
-class StreamProcess(KafkaConsumer):
+class TweetsConsumer(KafkaConsumer):
     def __init__(self, *args, **kwargs):
         self.broker                 = kwargs['bootstrap_servers']
         self._classifier_filepath   = kwargs.pop('classifier_filepath', None)
@@ -49,7 +50,7 @@ class StreamProcess(KafkaConsumer):
             id = message['id']
             tweet = message['tweet'].strip()
 
-            # Infer sentiment from tweet
+            # Infer sentiment from the tweet
             polarity = self._classify(tweet)
 
             data_point = [{
@@ -74,18 +75,18 @@ class StreamProcess(KafkaConsumer):
         except StopIteration as e:
             logging.warning("No incoming message found at Kafka broker: {}.".format(self.broker))
             return
-        
+
         except ConnectionError as e:
             logging.warning("Unable to connect to InfluxDB. Continuing ...")
             return
-            
+
 
     def _tokenize(self, tweet):
         return self._word_tokenizer.tokenize(tweet)
 
     def _is_noise(self, word):
         pattern = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+#]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+|(@[A-Za-z0-9_]+)'
-        return word in string.punctuation \
+        return word in punctuation \
             or word.lower() in self._stopwords \
             or re.search(pattern, word, re.IGNORECASE) != None
 
@@ -98,7 +99,10 @@ class StreamProcess(KafkaConsumer):
             - IN: Preposition or conjunction, subordinating
             - VBG: Verb, gerund or present participle
             - VBN: Verb, past participle
-
+            - JJ: adjective ‘big’
+            - JJR: adjective, comparative ‘bigger’
+            - JJS: adjective, superlative ‘biggest’
+            - ...
         return 'n' for noun, 'v' for verb, and 'a' for any
         """
         if tag.startswith('NN'):

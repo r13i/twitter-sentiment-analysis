@@ -6,8 +6,6 @@ from kafka import KafkaProducer
 from influxdb import InfluxDBClient
 
 
-from pprint import pprint
-
 class TweetsProducer(KafkaProducer):
     def __init__(self, topic, *args, **kwargs):
         self.topic = topic

@@ -4,6 +4,7 @@ import requests
 
 from kafka import KafkaProducer
 from influxdb import InfluxDBClient
+from influxdb.exceptions import InfluxDBServerError, InfluxDBClientError
 
 
 class TweetsProducer(KafkaProducer):
@@ -52,10 +53,12 @@ class TweetsProducer(KafkaProducer):
                     }
                 }]
 
-                if self.influxdb_client.write_points(data_point):
+                try:
+                    self.influxdb_client.write_points(data_point)
                     logging.info("Successfully stored ID '{}'.".format(line['data']['id']))
-                else:
-                    logging.info("Failed at storing ID '{}'.".format(line['data']['id']))
+                except (InfluxDBServerError, InfluxDBClientError) as e:
+                    logging.info("Failed at storing ID '{}'. Error: {}"format(line['data']['id'], e))
+
 
                 # Queueing tweets into Kafka for further processing
                 if line['data']['lang'] == 'en':

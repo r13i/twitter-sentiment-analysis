@@ -11,6 +11,7 @@ from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import TweetTokenizer
 from influxdb import InfluxDBClient
+from influxdb.exceptions import InfluxDBServerError, InfluxDBClientError
 
 class TweetsConsumer(KafkaConsumer):
     def __init__(self, *args, **kwargs):
@@ -65,10 +66,11 @@ class TweetsConsumer(KafkaConsumer):
                 }
             }]
 
-            if self.influxdb_client.write_points(data_point):
-                logging.info("DB SUCCESSFUL")
-            else:
-                logging.info("DB FAILED")
+            try:
+                self.influxdb_client.write_points(data_point)
+                logging.info("Successfully stored ID '{}'.".format(id))
+            except (InfluxDBServerError, InfluxDBClientError) as e:
+                logging.info("Failed at storing ID '{}'. Error: {}"format(id, e))
 
             # logging.info(message.offset)
 

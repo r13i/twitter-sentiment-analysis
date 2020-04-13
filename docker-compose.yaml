@@ -7,6 +7,7 @@ services:
     depends_on:
       - kafka
       - influxdb
+    restart: on-failure
     # command: >
     #   python run.py
     volumes:
@@ -19,6 +20,7 @@ services:
     depends_on:
       - kafka
       - influxdb
+    restart: on-failure
     # command: >
     #   python run.py
     volumes:
@@ -38,6 +40,7 @@ services:
     image: wurstmeister/kafka:2.12-2.4.0
     depends_on:
       - zookeeper
+    restart: on-failure
     ports:
       - "9092:9092"
     expose:
@@ -59,6 +62,7 @@ services:
   influxdb:
     container_name: twittersentimentanalysis_influxdb
     image: influxdb:1.7.10
+    restart: on-failure
     ports:
       - "8086:8086"
     volumes:
@@ -69,6 +73,7 @@ services:
   grafana:
     container_name: twittersentimentanalysis_grafana
     image: grafana/grafana:6.5.2
+    restart: on-failure
     environment:
       - "GF_INSTALL_PLUGINS=grafana-piechart-panel"
       - "GF_AUTH_ANONYMOUS_ENABLED=true"

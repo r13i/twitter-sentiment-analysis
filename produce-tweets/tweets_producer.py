@@ -6,8 +6,17 @@ from kafka import KafkaProducer
 from influxdb import InfluxDBClient
 from influxdb.exceptions import InfluxDBServerError, InfluxDBClientError
 
-
 class TweetsProducer(KafkaProducer):
+    '''
+    Tweets Producer class inheriting from the KafkaProducer class to
+    facilitate connection and interaction with a Kafka broker.
+
+    This class fetches a continuous stream of tweets from Twitter's API
+    and sends the text of these tweets into a Kafka topic for further processing.
+    
+    Also it connects to InfluxDB as time-series database to store some 
+    meta-data from these tweets.
+    '''
     def __init__(self, topic, *args, **kwargs):
         self.topic = topic
 
@@ -33,7 +42,6 @@ class TweetsProducer(KafkaProducer):
             url = stream_url,
             params = params,
             auth = auth,
-            # headers = { "User-Agent": "TwitterDevSampledStreamQuickStartPython" },
             stream = True
         )
 
@@ -57,8 +65,7 @@ class TweetsProducer(KafkaProducer):
                     self.influxdb_client.write_points(data_point)
                     logging.info("Successfully stored ID '{}'.".format(line['data']['id']))
                 except (InfluxDBServerError, InfluxDBClientError) as e:
-                    logging.info("Failed at storing ID '{}'. Error: {}"format(line['data']['id'], e))
-
+                    logging.info("Failed at storing ID '{}'. Error: {}".format(line['data']['id'], e))
 
                 # Queueing tweets into Kafka for further processing
                 if line['data']['lang'] == 'en':

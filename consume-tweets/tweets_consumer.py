@@ -14,6 +14,17 @@ from influxdb import InfluxDBClient
 from influxdb.exceptions import InfluxDBServerError, InfluxDBClientError
 
 class TweetsConsumer(KafkaConsumer):
+    '''
+    Tweets Consumer class inheriting from the KafkaConsumer class to
+    facilitate connection and interaction with a Kafka broker.
+
+    This class provides methods to pre-process and extract features
+    from tweets, and classify them using a pre-trained model
+    saved as a .pickle file.
+
+    Also it connects to InfluxDB as a time-series database to store 
+    the results of the classification.
+    '''
     def __init__(self, *args, **kwargs):
         self.broker                 = kwargs['bootstrap_servers']
         self._classifier_filepath   = kwargs.pop('classifier_filepath', None)
@@ -70,7 +81,7 @@ class TweetsConsumer(KafkaConsumer):
                 self.influxdb_client.write_points(data_point)
                 logging.info("Successfully stored ID '{}'.".format(id))
             except (InfluxDBServerError, InfluxDBClientError) as e:
-                logging.info("Failed at storing ID '{}'. Error: {}"format(id, e))
+                logging.info("Failed at storing ID '{}'. Error: {}".format(id, e))
 
             # logging.info(message.offset)
 

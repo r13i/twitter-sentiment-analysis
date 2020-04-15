@@ -13,6 +13,11 @@ services:
     volumes:
       - ./produce-tweets:/produce-tweets
       - ./config.ini:/produce-tweets/config.ini
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
   consumer:
     container_name: twittersentimentanalysis_consumer
@@ -27,6 +32,11 @@ services:
       - ./consume-tweets:/consume-tweets
       - ./config.ini:/consume-tweets/config.ini
       - ./model/model.pickle:/consume-tweets/model.pickle
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
   zookeeper:
     container_name: twittersentimentanalysis_zookeeper
@@ -58,6 +68,11 @@ services:
       - "KAFKA_LOG_DIRS=/tmp/kafka-logs"
       - "KAFKA_LOG_RETENTION_HOURS=24"
       - "KAFKA_LOG_CLEANUP_POLICY=delete"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
   influxdb:
     container_name: twittersentimentanalysis_influxdb
@@ -69,6 +84,11 @@ services:
       - ./persistence/influxdb:/var/lib/influxdb
     environment:
       - "INFLUXDB_GRAPHITE_ENABLED=false"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
   grafana:
     container_name: twittersentimentanalysis_grafana

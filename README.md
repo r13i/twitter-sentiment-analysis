@@ -14,13 +14,23 @@ The Modelization part is described at [./model/twitter-sentiment-analysis.ipynb]
 
 ## Deployment
 
-Local and live deployement are done through the same [docker-compose.yaml](docker-compose.yaml) file.
+Local deployment is done through this [docker-compose.yaml](docker-compose.yaml) file.
+
+Live deployment instructions will be published in a separate tutorial/instructions which will consist mainly of how to setup SSL Encryption with a reverse NGINX proxy to enable Let's Encrypt. Following tutorials will be helpful if you want to setup your own encryption machinery: [Nginx Proxy](https://github.com/nginx-proxy/nginx-proxy) and [Let's Encrypt](https://github.com/nginx-proxy/docker-letsencrypt-nginx-proxy-companion).
 
 Compose offers a way to control the order of statup and shutdown of containers through the `depends_on` option, but, by design, [there is no way to delay statup until a service becomes available](https://docs.docker.com/compose/startup-order/) - unless we run a script that waits for a service to become available with a `command` option.
 
 > The problem of waiting for a database (for example) to be ready is really just a subset of a much larger problem of distributed systems. In production, your database could become unavailable or move hosts at any time. Your application needs to be resilient to these types of failures.
 
 > To handle this, design your application to attempt to re-establish a connection to the database after a failure. If the application retries the connection, it can eventually connect to the database.
+
+### Requirements
+
+- After obtaining your set of Twitter API key and secret (See article mentioned above), you have to set those in the (secret.ini)[./produce-tweets/secret.ini] file.
+
+- Run the Jupter Notebook (twitter-sentiment-analysis.ipynb)[./model/twitter-sentiment-analysis.ipynb] to build a model and save it in a *.pickle* file. See the (README.md)[./model/README.md] file for running instructions.
+
+### Starting the Services
 
 Services need to be started in a specific order with the following commands:
 ```

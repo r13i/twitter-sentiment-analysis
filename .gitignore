@@ -1,6 +1,8 @@
 # Specifics to project
+live-docker-compose.yaml
 secret.ini
 persistence/
+nginx-proxy/
 *.pickle
 *.xml
 

@@ -44,6 +44,11 @@ services:
     restart: on-failure
     expose:
       - "2181"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
   kafka:
     container_name: twittersentimentanalysis_kafka
@@ -78,8 +83,8 @@ services:
     container_name: twittersentimentanalysis_influxdb
     image: influxdb:1.7.10
     restart: on-failure
-    ports:
-      - "8086:8086"
+    expose:
+      - "8086"
     volumes:
       - ./persistence/influxdb:/var/lib/influxdb
     environment:
@@ -94,15 +99,15 @@ services:
     container_name: twittersentimentanalysis_grafana
     image: grafana/grafana:6.5.2
     restart: on-failure
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./persistence/grafana:/var/lib/grafana
     environment:
       - "GF_INSTALL_PLUGINS=grafana-piechart-panel"
       - "GF_AUTH_ANONYMOUS_ENABLED=true"
       - "GF_AUTH_ANONYMOUS_org_name=Main Org."
       - "GF_AUTH_ANONYMOUS_org_role=Admin"
-    ports: 
-      - "80:3000"
-    volumes:
-      - ./persistence/grafana:/var/lib/grafana
 
 networks:
   default:

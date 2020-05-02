@@ -3,7 +3,7 @@ What if we could see the sentiments of people through the breadcrumbs they leave
 
 ## Quick Access Links
 
-This project is described in details in this article: [LINK]().
+This project is described in details in [this article](https://medium.com/@redouane.achouri/twitter-sentiment-analysis-a-tale-of-stream-processing-8fd92e19a6e6).
 
 Final dashboard can be found here: [grafana.redouaneachouri.com](http://grafana.redouaneachouri.com/d/_TYUeQCZk/twitter-sentiment-analysis).
 

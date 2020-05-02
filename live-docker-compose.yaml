@@ -13,6 +13,8 @@ services:
     volumes:
       - ./produce-tweets:/produce-tweets
       - ./config.ini:/produce-tweets/config.ini
+    environment:
+      - "NETWORK_ACCESS=internal"
     logging:
       driver: "json-file"
       options:
@@ -32,6 +34,8 @@ services:
       - ./consume-tweets:/consume-tweets
       - ./config.ini:/consume-tweets/config.ini
       - ./model/model.pickle:/consume-tweets/model.pickle
+    environment:
+      - "NETWORK_ACCESS=internal"
     logging:
       driver: "json-file"
       options:
@@ -44,6 +48,8 @@ services:
     restart: on-failure
     expose:
       - "2181"
+    environment:
+      - "NETWORK_ACCESS=internal"
     logging:
       driver: "json-file"
       options:
@@ -56,17 +62,16 @@ services:
     depends_on:
       - zookeeper
     restart: on-failure
-    ports:
-      - "9092:9092"
     expose:
       - "9093"
     volumes:
       - ./persistence/kafka:/tmp/kafka-logs
     environment:
+      - "NETWORK_ACCESS=internal"
       - "KAFKA_BROKER_ID=1"
-      - "KAFKA_LISTENERS=INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092"
-      - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
-      - "KAFKA_ADVERTISED_LISTENERS=INSIDE://kafka:9093,OUTSIDE://localhost:9092"
+      - "KAFKA_LISTENERS=INSIDE://0.0.0.0:9093"
+      - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT"
+      - "KAFKA_ADVERTISED_LISTENERS=INSIDE://kafka:9093"
       - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
       - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
       - "KAFKA_CREATE_TOPICS=tweets:1:1"
@@ -89,6 +94,8 @@ services:
       - ./persistence/influxdb:/var/lib/influxdb
     environment:
       - "INFLUXDB_GRAPHITE_ENABLED=false"
+      - "NETWORK_ACCESS=internal"
+
     logging:
       driver: "json-file"
       options:
@@ -99,17 +106,22 @@ services:
     container_name: twittersentimentanalysis_grafana
     image: grafana/grafana:6.5.2
     restart: on-failure
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./persistence/grafana:/var/lib/grafana
+    expose:
+      - "3000"
     environment:
       - "GF_INSTALL_PLUGINS=grafana-piechart-panel"
       - "GF_AUTH_ANONYMOUS_ENABLED=true"
       - "GF_AUTH_ANONYMOUS_org_name=Main Org."
       - "GF_AUTH_ANONYMOUS_org_role=Admin"
+      # Nginx Reverse Proxy configuration (SSL Encryption)
+      - "VIRTUAL_PORT=3000"                           # Grafana by default listens on 3000
+      - "VIRTUAL_HOST=<subdomain.domain.tld>"
+      - "LETSENCRYPT_HOST=<subdomain.domain.tld>"
+      # - "LETSENCRYPT_EMAIL=<mail@yourdomain.tld>"   # optional
+    volumes:
+      - ./persistence/grafana:/var/lib/grafana
 
 networks:
   default:
     external:
-      name: twittersentimentanalysis_network
+      name: nginx-proxy-network

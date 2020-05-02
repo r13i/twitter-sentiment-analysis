@@ -1,6 +1,6 @@
 # Specifics to project
-secret.ini
 persistence/
+nginx-proxy/
 *.pickle
 *.xml
 

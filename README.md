@@ -11,6 +11,9 @@ The Modelization part is described at [./model/twitter-sentiment-analysis.ipynb]
 
 ![Architecture diagram](docs/twitter-sentiment-analysis-diagram.png)
 
+## Updates
+- __Saturday, 23rd May 2020__: Changed the InfluxDB retention policy to 30 days to limit disk space consumption. Previous retention was defaulting to infinite. Older data has been discarded and new data starts to be recorded as of this day. See below for [How to Setup a Retention Policy](#how-to-setup-a-retention-policy).
+
 
 ## Deployment
 
@@ -42,6 +45,28 @@ docker-compose up -d grafana
 
 # Start the producer and the consumer
 docker-compose up -d producer consumer
+```
+
+#### How to Setup a Retention Policy
+
+Following instructions show how to setup a retention policy of 30 days for InfluxDB. The DB names are defined in the [config.ini](./config.ini) file.
+
+```
+# On your server, log into the InfluxDB container:
+docker exec -it twittersentimentanalysis_influxdb bash
+
+# Start the influx prompt (useful execute InfluxQL queries)
+influx # you can add '-precision rfc3339' to print timestamps to a human-readable format
+
+# Set the retention policy to 30 days
+CREATE RETENTION POLICY one_month ON sentiments DURATION 30d REPLICATION 1 DEFAULT
+CREATE RETENTION POLICY one_month ON languages DURATION 30d REPLICATION 1 DEFAULT
+
+# Verify that it has been set successfully
+SHOW RETENTION POLICIES ON sentiments
+SHOW RETENTION POLICIES ON languages
+
+# Exit the terminal with Ctrl+D
 ```
 
 ### Useful Links

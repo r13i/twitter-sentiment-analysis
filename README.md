@@ -14,6 +14,8 @@ The Modelization part is described at [./model/twitter-sentiment-analysis.ipynb]
 ## Updates
 - __Saturday, 23rd May 2020__: Changed the InfluxDB retention policy to 30 days to limit disk space consumption. Previous retention was defaulting to infinite. Older data has been discarded and new data starts to be recorded as of this day. See below for [How to Setup a Retention Policy](#how-to-setup-a-retention-policy).
 
+- __Sunday, 24th May 2020__: Found a way to change the retention policy while keeping the old (accumulated, undeleted) records. See [Keep old records](#keep-old-records) below for instructions.
+
 
 ## Deployment
 
@@ -57,11 +59,29 @@ docker exec -it twittersentimentanalysis_influxdb bash
 
 # Start the influx prompt (useful execute InfluxQL queries)
 influx # you can add '-precision rfc3339' to print timestamps to a human-readable format
+```
 
-# Set the retention policy to 30 days
+##### Keep old records
+```
+# List existing retention policies
+SHOW RETENTION POLICIES ON sentiments
+SHOW RETENTION POLICIES ON languages
+
+# Alter default policy (generally named 'autogen')
+ALTER RETENTION POLICY autogen ON sentiments DURATION 30d
+ALTER RETENTION POLICY autogen ON languages DURATION 30d
+```
+
+##### Start recording from scratch
+
+```
+# Create new retention policy and set the duration to 30 days
 CREATE RETENTION POLICY one_month ON sentiments DURATION 30d REPLICATION 1 DEFAULT
 CREATE RETENTION POLICY one_month ON languages DURATION 30d REPLICATION 1 DEFAULT
+```
 
+Once all finished:
+```
 # Verify that it has been set successfully
 SHOW RETENTION POLICIES ON sentiments
 SHOW RETENTION POLICIES ON languages

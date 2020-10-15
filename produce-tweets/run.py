@@ -14,11 +14,10 @@ from utils.utils import dash
 
 
 PARAMS = {
-    # "format": "detailed",
-    "tweet.format": "detailed",
-    # "user.format": "detailed",
-    # "place.format": "detailed",
-    # "expansions": "attachments.poll_ids,attachments.media_keys,author_id,entities.mentions.username,geo.place_id,in_reply_to_user_id,referenced_tweets.id,referenced_tweets.id.author_id"
+    "tweet.fields": "lang",
+    # "tweet.fields": "lang,geo",
+    # "place.fields": "contained_within,country,country_code,full_name,geo,id,name,place_type",
+    # "expansions": "geo.place_id",
 }
 
 def connect_broker(broker, topic,

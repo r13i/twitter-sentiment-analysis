@@ -16,6 +16,10 @@ The Modelization part is described at [./model/twitter-sentiment-analysis.ipynb]
 
 - __Sunday, 24th May 2020__: Found a way to change the retention policy while keeping the old (accumulated, undeleted) records. See [Keep old records](#keep-old-records) below for instructions.
 
+- __Monday, 12th October 2020__: Twitter discontinues some Labs v1 API endpoints (including the sample stream endpoint used by this project), after having launched a new version of its API. I've taken changes into consideration and the project is up-to-date.
+
+- __Saturday, 17th October 2020__: Added a worldmap panel to visualize where tweets were emitted.
+
 
 ## Deployment
 

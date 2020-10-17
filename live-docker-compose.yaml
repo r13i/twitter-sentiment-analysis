@@ -109,7 +109,7 @@ services:
     expose:
       - "3000"
     environment:
-      - "GF_INSTALL_PLUGINS=grafana-piechart-panel"
+      - "GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel"
       - "GF_AUTH_ANONYMOUS_ENABLED=true"
       - "GF_AUTH_ANONYMOUS_org_name=Main Org."
       - "GF_AUTH_ANONYMOUS_org_role=Admin"

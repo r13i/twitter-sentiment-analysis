@@ -98,13 +98,15 @@ services:
   grafana:
     container_name: twittersentimentanalysis_grafana
     image: grafana/grafana:6.5.2
+    depends_on:
+      - influxdb
     restart: on-failure
     ports:
       - "3000:3000"
     volumes:
       - ./persistence/grafana:/var/lib/grafana
     environment:
-      - "GF_INSTALL_PLUGINS=grafana-piechart-panel"
+      - "GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel"
       - "GF_AUTH_ANONYMOUS_ENABLED=true"
       - "GF_AUTH_ANONYMOUS_org_name=Main Org."
       - "GF_AUTH_ANONYMOUS_org_role=Admin"

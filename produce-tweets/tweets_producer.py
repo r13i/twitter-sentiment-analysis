@@ -46,7 +46,7 @@ class TweetsProducer(KafkaProducer):
         )
 
         for line in response.iter_lines():
-            if line:
+            if line and line != b'Rate limit exceeded':
                 line = json.loads(line)
 
                 # Storing tweets' language
@@ -60,6 +60,26 @@ class TweetsProducer(KafkaProducer):
                         "id": line['data']['id']
                     }
                 }]
+
+                if geo_data := line.get('includes', {}).get('places'):
+                    # If tweet is tagged in a specific location
+                    if coordinates := line['data'].get('geo', {}).get('coordinates', {}).get('coordinates'):
+                        lon, lat = coordinates
+                    # Else use the generic location of the tweet
+                    else:
+                        lon1, lat1, lon2, lat2 = geo_data[0]['geo']['bbox']
+                        lon = (lon1 + lon2) / 2
+                        lat = (lat1 + lat2) / 2
+
+                    # Set country_code and place_name as tags so that we can
+                    # filter and group by these values
+                    data_point[0]["tags"]["country_code"] = geo_data[0]["country_code"]
+                    data_point[0]["tags"]["place_name"] = geo_data[0]["full_name"]
+
+                    # Latitudes and Longitudes should be set as fields to be
+                    # retrieved with a SELECT statement
+                    data_point[0]["fields"]["latitude"] = lat
+                    data_point[0]["fields"]["longitude"] = lon
 
                 try:
                     self.influxdb_client.write_points(data_point)

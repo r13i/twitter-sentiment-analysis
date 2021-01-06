@@ -35,9 +35,9 @@ Compose offers a way to control the order of statup and shutdown of containers t
 
 ### Requirements
 
-- After obtaining your set of Twitter API key and secret (See article mentioned above), you have to set those in the (secret.ini)[./produce-tweets/secret.ini] file.
+- After obtaining your set of Twitter API key and secret (See article mentioned above), you have to set those in the [secret.ini](./produce-tweets/secret.ini) file.
 
-- Run the Jupter Notebook (twitter-sentiment-analysis.ipynb)[./model/twitter-sentiment-analysis.ipynb] to build a model and save it in a *.pickle* file. See the (README.md)[./model/README.md] file for running instructions.
+- Run the Jupter Notebook [twitter-sentiment-analysis.ipynb](./model/twitter-sentiment-analysis.ipynb) to build a model and save it in a *.pickle* file. See the (README.md)[./model/README.md] file for running instructions.
 
 ### Starting the Services
 

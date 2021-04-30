@@ -3,5 +3,5 @@ chardet==3.0.4
 idna==2.8
 kafka-python==1.4.7
 requests==2.22.0
-urllib3==1.25.7
+urllib3==1.25.8
 influxdb==5.2.3

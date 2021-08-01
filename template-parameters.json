@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "ProducerImageName",
+    "ParameterValue": "491708216725.dkr.ecr.eu-north-1.amazonaws.com/twitter-sentiment-analysis"
+  },
+  {
+    "ParameterKey": "ProducerImageTag",
+    "ParameterValue": "producer-3"
+  }
+]

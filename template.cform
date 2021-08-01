@@ -1,0 +1,146 @@
+# aws --profile myaws cloudformation create-stack --stack-name twitter-sentiment-analysis --template-body file://template.cform --parameters file://template-parameters.json --on-failure DELETE --capabilities CAPABILITY_NAMED_IAM
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Template for the Twitter Sentiment Analysis project stack
+
+Parameters:
+  ProducerImageName:
+    Type: String
+    Description: The docker image name for the producer
+    Default: ""
+
+  ProducerImageTag:
+    Type: String
+    Description: The docker image tag for the producer
+    Default: ""
+
+Resources:
+  TwitterSentimentAnalysisCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      CapacityProviders: 
+        - FARGATE_SPOT
+      ClusterName: "twitter-sentiment-analysis-cluster"
+      Tags:
+        - Key: Name
+          Value: twitter-sentiment-analysis-cluster
+
+  ProducerTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn:
+      - ProducerLogGroup
+      - ProducerTaskRole
+    Properties:
+      RequiresCompatibilities:
+        - "FARGATE"
+      ContainerDefinitions:
+        -
+          Name: "twittersentimentanalysis-producer"
+          Image: !Sub "${ProducerImageName}:${ProducerImageTag}"
+          # Interactive:
+          # Essential: false
+          # Links: 
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-group: !Ref ProducerLogGroup
+              awslogs-stream-prefix: "/producer"
+              # awslogs-datetime-format
+              mode: "non-blocking"
+              max-buffer-size: 1m
+      Cpu: "256"
+      Memory: "512"
+      ExecutionRoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole"
+      TaskRoleArn: !Ref ProducerTaskRole
+      NetworkMode: awsvpc
+      # ProxyConfiguration:
+      #   ContainerName: "String"
+      #   ProxyConfigurationProperties:
+      #     -
+      #   Type: "String"
+      Tags:
+        - Key: Name
+          Value: twitter-sentiment-analysis-task-definition
+      # Volumes:
+      #   Volumes
+
+  ProducerService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - TwitterSentimentAnalysisCluster
+      - ProducerTaskDefinition
+    Properties:
+      ServiceName: "twitter-sentiment-analysis-producer"
+      Cluster: !Ref TwitterSentimentAnalysisCluster
+      TaskDefinition: !Ref ProducerTaskDefinition
+      LaunchType: FARGATE
+      DesiredCount: 1
+      EnableExecuteCommand: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          # SecurityGroups:
+          Subnets:
+            - "subnet-bf15c8c4"
+            - "subnet-f49c63b9"
+            - "subnet-9cb507f5"
+      # PropagateTags: SERVICE # or TASK_DEFINITION
+      # Role: "String"
+      # SchedulingStrategy: "String"
+      Tags:
+        - Key: Name
+          Value: twitter-sentiment-analysis-producer
+
+  ProducerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 1
+      LogGroupName: "/twitter-sentiment-analysis/producer"
+
+  ProducerTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "twitter-sentiment-analysis-task-role"
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - 
+            Effect: "Allow"
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service: 
+                - "ecs-tasks.amazonaws.com"
+      Policies:
+        - 
+          PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - 
+                Effect: "Allow"
+                Action: "*"
+                Resource: "*"
+      Tags:
+        - Key: Name
+          Value: twitter-sentiment-analysis-task-role
+
+Outputs:
+  TwitterSentimentAnalysisCluster:
+    Description: The ID of the TwitterSentimentAnalysisCluster
+    Value: !Ref TwitterSentimentAnalysisCluster
+
+  ProducerTaskDefinition:
+    Description: The ID of the ProducerTaskDefinition
+    Value: !Ref ProducerTaskDefinition
+
+  ProducerService:
+    Description: The ID of the ProducerService
+    Value: !Ref ProducerService
+
+  ProducerLogGroup:
+    Description: The ID of the ProducerLogGroup
+    Value: !Ref ProducerLogGroup

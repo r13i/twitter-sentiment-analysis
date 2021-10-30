@@ -1,60 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_INFLUXDB-SENTIMENTS",
-      "label": "InfluxDB-sentiments",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "influxdb",
-      "pluginName": "InfluxDB"
-    },
-    {
-      "name": "DS_INFLUXDB-TWEETS",
-      "label": "InfluxDB-tweets",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "influxdb",
-      "pluginName": "InfluxDB"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "panel",
-      "id": "gauge",
-      "name": "Gauge",
-      "version": ""
-    },
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "6.5.2"
-    },
-    {
-      "type": "panel",
-      "id": "grafana-piechart-panel",
-      "name": "Pie Chart",
-      "version": "1.4.0"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "influxdb",
-      "name": "InfluxDB",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "singlestat",
-      "name": "Singlestat",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -71,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": null,
+  "id": 1,
   "links": [
     {
       "icon": "external link",
@@ -95,6 +39,280 @@
   ],
   "panels": [
     {
+      "circleMaxSize": 30,
+      "circleMinSize": 2,
+      "colors": [
+        "rgba(245, 54, 54, 0.9)",
+        "#5794F2"
+      ],
+      "datasource": "InfluxDB-tweets",
+      "decimals": 0,
+      "description": "Count of tweets per received location",
+      "esMetric": "Count",
+      "gridPos": {
+        "h": 15,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "hideEmpty": true,
+      "hideZero": false,
+      "id": 15,
+      "initialZoom": 1,
+      "locationData": "table",
+      "mapCenter": "(0°, 0°)",
+      "mapCenterLatitude": 0,
+      "mapCenterLongitude": 0,
+      "maxDataPoints": 1,
+      "mouseWheelZoom": true,
+      "options": {},
+      "showLegend": false,
+      "stickyLabels": false,
+      "tableQueryOptions": {
+        "geohashField": "geohash",
+        "labelField": "country_code",
+        "latitudeField": "latitude",
+        "longitudeField": "longitude",
+        "metricField": "count",
+        "queryType": "coordinates"
+      },
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "place_name"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "0"
+              ],
+              "type": "fill"
+            }
+          ],
+          "limit": "",
+          "measurement": "languages",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT mean(\"latitude\") AS \"latitude\", mean(\"longitude\") AS \"longitude\", count(\"id\") AS \"count\" FROM \"languages\" WHERE (\"country_code\" <> '') AND $timeFilter GROUP BY \"country_code\" fill(0)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table",
+          "select": [
+            [
+              {
+                "params": [
+                  "latitude"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              },
+              {
+                "params": [
+                  "latitude"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "longitude"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              },
+              {
+                "params": [
+                  "longitude"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "count"
+              },
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "place_name",
+              "operator": "=",
+              "value": "US"
+            }
+          ]
+        }
+      ],
+      "thresholds": "0",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Tweets Distribution per Country",
+      "type": "grafana-worldmap-panel",
+      "unitPlural": "tweets",
+      "unitSingle": "",
+      "unitSingular": "tweet",
+      "valueName": "total"
+    },
+    {
+      "circleMaxSize": 30,
+      "circleMinSize": 2,
+      "colors": [
+        "rgba(245, 54, 54, 0.9)",
+        "rgba(237, 129, 40, 0.89)"
+      ],
+      "datasource": "InfluxDB-tweets",
+      "decimals": 0,
+      "description": "Count of tweets per received location",
+      "esMetric": "Count",
+      "gridPos": {
+        "h": 15,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "hideEmpty": true,
+      "hideZero": false,
+      "id": 14,
+      "initialZoom": "1",
+      "locationData": "table",
+      "mapCenter": "(0°, 0°)",
+      "mapCenterLatitude": 0,
+      "mapCenterLongitude": 0,
+      "maxDataPoints": 1,
+      "mouseWheelZoom": true,
+      "options": {},
+      "showLegend": false,
+      "stickyLabels": false,
+      "tableQueryOptions": {
+        "geohashField": "geohash",
+        "labelField": "place_name",
+        "latitudeField": "latitude",
+        "longitudeField": "longitude",
+        "metricField": "count",
+        "queryType": "coordinates"
+      },
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "place_name"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "0"
+              ],
+              "type": "fill"
+            }
+          ],
+          "limit": "",
+          "measurement": "languages",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT mean(\"latitude\") AS \"latitude\", mean(\"longitude\") AS \"longitude\", count(\"id\") AS \"count\" FROM \"languages\" WHERE (\"place_name\" <> '') AND $timeFilter GROUP BY \"place_name\" fill(0)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table",
+          "select": [
+            [
+              {
+                "params": [
+                  "latitude"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              },
+              {
+                "params": [
+                  "latitude"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "longitude"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              },
+              {
+                "params": [
+                  "longitude"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "count"
+              },
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "place_name",
+              "operator": "=",
+              "value": "US"
+            }
+          ]
+        }
+      ],
+      "thresholds": "0",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "World Tweets Distribution",
+      "type": "grafana-worldmap-panel",
+      "unitPlural": "tweets",
+      "unitSingle": "",
+      "unitSingular": "tweet",
+      "valueName": "total"
+    },
+    {
       "cacheTimeout": null,
       "colorBackground": false,
       "colorPrefix": false,
@@ -104,7 +322,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "${DS_INFLUXDB-SENTIMENTS}",
+      "datasource": "InfluxDB-sentiments",
       "description": "Total number of tweets processed during the selected time-frame.",
       "format": "none",
       "gauge": {
@@ -118,7 +336,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 15
       },
       "id": 10,
       "interval": null,
@@ -221,7 +439,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "${DS_INFLUXDB-SENTIMENTS}",
+      "datasource": "InfluxDB-sentiments",
       "description": "Total count of positive tweets processed during the selected time-frame.",
       "format": "none",
       "gauge": {
@@ -235,7 +453,7 @@
         "h": 4,
         "w": 12,
         "x": 0,
-        "y": 4
+        "y": 19
       },
       "id": 11,
       "interval": null,
@@ -344,7 +562,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "${DS_INFLUXDB-SENTIMENTS}",
+      "datasource": "InfluxDB-sentiments",
       "description": "Total count of negative tweets processed during the selected time-frame.",
       "format": "none",
       "gauge": {
@@ -358,7 +576,7 @@
         "h": 4,
         "w": 12,
         "x": 12,
-        "y": 4
+        "y": 19
       },
       "id": 12,
       "interval": null,
@@ -496,7 +714,7 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB-SENTIMENTS}",
+      "datasource": "InfluxDB-sentiments",
       "description": "Representation of the number of tweets classified by polarity for a given point it time. Top graph is for positive tweets, and bottom graph is for negatives.",
       "fill": 1,
       "fillGradient": 0,
@@ -504,7 +722,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 23
       },
       "hiddenSeries": false,
       "id": 2,
@@ -673,13 +891,13 @@
       }
     },
     {
-      "datasource": "${DS_INFLUXDB-SENTIMENTS}",
+      "datasource": "InfluxDB-sentiments",
       "description": "Ratio between number of positive tweets vs. negative tweets.",
       "gridPos": {
         "h": 6,
         "w": 7,
         "x": 0,
-        "y": 15
+        "y": 30
       },
       "id": 8,
       "options": {
@@ -768,7 +986,7 @@
         "label": "Others",
         "threshold": "0.02"
       },
-      "datasource": "${DS_INFLUXDB-TWEETS}",
+      "datasource": "InfluxDB-tweets",
       "description": "Count of tweets received for each language.",
       "fontSize": "80%",
       "format": "short",
@@ -776,7 +994,7 @@
         "h": 6,
         "w": 12,
         "x": 7,
-        "y": 15
+        "y": 30
       },
       "id": 4,
       "interval": null,
@@ -862,7 +1080,7 @@
         "label": "Others",
         "threshold": 0
       },
-      "datasource": "${DS_INFLUXDB-SENTIMENTS}",
+      "datasource": "InfluxDB-sentiments",
       "description": "Proportion of positive tweets vs. negative tweets",
       "fontSize": "80%",
       "format": "short",
@@ -870,7 +1088,7 @@
         "h": 6,
         "w": 5,
         "x": 19,
-        "y": 15
+        "y": 30
       },
       "id": 6,
       "interval": null,
@@ -1006,6 +1224,6 @@
   },
   "timezone": "",
   "title": "Twitter Sentiment Analysis",
-  "uid": "_TYUeQCZk",
-  "version": 25
+  "uid": "twitter-sentiment-analysis",
+  "version": 12
 }
